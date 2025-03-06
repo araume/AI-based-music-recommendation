@@ -22,7 +22,7 @@ def recommend_song(sentiment, df):
     return None
 
 # Load dataset
-file_path = "music_sentiment_dataset.csv"
+file_path = "_internal/music_sentiment_dataset.csv"
 df = pd.read_csv(file_path)
 
 def get_music_recommendation(user_text):
