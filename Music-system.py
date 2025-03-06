@@ -33,6 +33,6 @@ def recommend_songs(user_text):
     return recommended_songs[['Song_Name', 'Artist', 'Genre', 'Tempo (BPM)', 'Mood', 'Energy', 'Danceability']]
 
 # Example Usage
-user_input = "I feel so happy today!"
+user_input = input("Enter your current mood: ")
 recommendations = recommend_songs(user_input)
 print(recommendations)
