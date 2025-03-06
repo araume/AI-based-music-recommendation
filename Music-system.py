@@ -1,37 +1,35 @@
-import random
 import pandas as pd
-from textblob import TextBlob
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
 
-def classify_sentiment(user_text):
-    """Classify sentiment based on polarity score."""
-    polarity = TextBlob(user_text).sentiment.polarity
-    if polarity > 0.3:
-        return "Happy"
-    elif polarity < -0.3:
-        return "Sad"
-    elif polarity > -0.3 and polarity < 0:
-        return "Relaxed"
-    else:
-        return "Motivated"
+# Load the dataset
+df = pd.read_csv('music_sentiment_dataset.csv')
 
-def recommend_song(sentiment, df):
-    """Recommend a song based on sentiment."""
-    filtered_df = df[df['Sentiment_Label'] == sentiment]
-    if not filtered_df.empty:
-        return filtered_df.sample(1).to_dict(orient='records')[0]
-    return None
+# Preprocessing
+vectorizer = TfidfVectorizer(max_features=5000)
+X = vectorizer.fit_transform(df['User_Text'])
+y = df['Sentiment_Label']
 
-# Load dataset
-file_path = "_internal/music_sentiment_dataset.csv"
-df = pd.read_csv(file_path)
+# Train-Test Split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-def get_music_recommendation(user_text):
-    sentiment = classify_sentiment(user_text)
-    song = recommend_song(sentiment, df)
-    return sentiment, song
+# Sentiment Classification Model
+model = RandomForestClassifier()
+model.fit(X_train, y_train)
 
-# Example usage
-user_input = "I feel sad to even go out."
-sentiment, recommended_song = get_music_recommendation(user_input)
-print(f"Detected Sentiment: {sentiment}")
-print("Recommended Song:", recommended_song)
+# Evaluation
+y_pred = model.predict(X_test)
+print(f"Accuracy: {accuracy_score(y_test, y_pred)}")
+
+# Recommendation Function
+def recommend_songs(user_text):
+    sentiment = model.predict(vectorizer.transform([user_text]))[0]
+    recommended_songs = df[df['Sentiment_Label'] == sentiment]
+    return recommended_songs[['Song_Name', 'Artist', 'Genre', 'Tempo (BPM)', 'Mood', 'Energy', 'Danceability']]
+
+# Example Usage
+user_input = "I feel like I can do anything"
+recommendations = recommend_songs(user_input)
+print(recommendations)
